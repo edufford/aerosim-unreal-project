@@ -1,7 +1,6 @@
 {
 	"FileVersion": 3,
 	"EngineAssociation": "5.3",
-
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -75,6 +74,15 @@
 		{
 			"Name": "PixelStreaming",
 			"Enabled": true
+		},
+		{
+			"Name": "OpenXR",
+			"Enabled": true,
+			"SupportedTargetPlatforms": [
+				"Win64",
+				"Linux",
+				"Android"
+			]
 		}
 	]
 }
