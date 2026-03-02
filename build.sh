@@ -100,6 +100,17 @@ check_and_pause() {
 }
 
 # Run setup if needed
+if [ -d ${CESIUM_SOURCE_PATH} ]; then
+    # Check for version mismatch between installed plugin and required version
+    CESIUM_UPLUGIN="${CESIUM_SOURCE_PATH}/CesiumForUnreal.uplugin"
+    CESIUM_INSTALLED_VERSION=$(grep '"VersionName"' "$CESIUM_UPLUGIN" 2>/dev/null | grep -o '"[0-9]*\.[0-9]*\.[0-9]*"' | tr -d '"')
+    CESIUM_REQUIRED_VERSION="${CESIUM_VERSION#v}"  # strip leading 'v'
+    if [ "$CESIUM_INSTALLED_VERSION" != "$CESIUM_REQUIRED_VERSION" ]; then
+        echo "CesiumForUnreal version mismatch: installed=$CESIUM_INSTALLED_VERSION, required=$CESIUM_REQUIRED_VERSION"
+        echo "Removing installed plugin and re-downloading..."
+        rm -rf ${CESIUM_SOURCE_PATH}
+    fi
+fi
 if [ ! -d ${CESIUM_SOURCE_PATH} ]; then
     echo "Downloading CesiumForUnreal $CESIUM_VERSION for UE 5.$UE_MINOR_VERSION..."
     pushd Plugins > /dev/null
