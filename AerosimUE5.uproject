@@ -1,7 +1,6 @@
 {
 	"FileVersion": 3,
 	"EngineAssociation": "5.3",
-
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -65,12 +64,7 @@
 		},
 		{
 			"Name": "USDImporter",
-			"Enabled": true,
-			"SupportedTargetPlatforms": [
-				"Win64",
-				"Mac",
-				"Linux"
-			]
+			"Enabled": true
 		},
 		{
 			"Name": "PixelStreaming",
