@@ -12,9 +12,9 @@ RHI="vulkan"
 
 CESIUM_SOURCE_PATH="Plugins/CesiumForUnreal"
 
-# Detect the Unreal Engine minor version from the .uproject EngineAssociation field
+# Detect the Unreal Engine minor version from the engine's Build.version file
 # and select the matching Cesium for Unreal version and download URL prefix.
-UE_MINOR_VERSION=$(grep -o '"EngineAssociation": "[0-9]*\.[0-9]*"' AerosimUE5.uproject | grep -o '[0-9]*\.[0-9]*' | cut -d. -f2)
+UE_MINOR_VERSION=$(grep '"MinorVersion"' "$AEROSIM_UNREAL_ENGINE_ROOT/Engine/Build/Build.version" | grep -o '[0-9]*')
 if [ "$UE_MINOR_VERSION" = "3" ]; then
     CESIUM_VERSION="v2.13.2"
     CESIUM_UE_PREFIX="53"
@@ -101,7 +101,7 @@ check_and_pause() {
 
 # Run setup if needed
 if [ ! -d ${CESIUM_SOURCE_PATH} ]; then
-    echo "Downloading CesiumForUnreal $CESIUM_VERSION..."
+    echo "Downloading CesiumForUnreal $CESIUM_VERSION for UE 5.$UE_MINOR_VERSION..."
     pushd Plugins > /dev/null
     curl --retry 5 --retry-max-time 120 -L -o CesiumPluginForUnreal.zip https://github.com/CesiumGS/cesium-unreal/releases/download/${CESIUM_VERSION}/CesiumForUnreal-${CESIUM_UE_PREFIX}-${CESIUM_VERSION}.zip
     check_and_pause
