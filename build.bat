@@ -12,7 +12,6 @@ set UPROJECT=%AEROSIM_UNREAL_PROJECT_ROOT%\AerosimUE5.uproject
 set RHI=d3d12
 
 set CESIUM_SOURCE_PATH=Plugins\CesiumForUnreal
-set CESIUM_VERSION=v2.13.2
 
 @REM Set default target to build
 if "!ARGS!" == "" (
@@ -78,11 +77,35 @@ if not defined AEROSIM_UNREAL_ENGINE_ROOT (
     echo AEROSIM_UNREAL_ENGINE_ROOT is set to %AEROSIM_UNREAL_ENGINE_ROOT%
 )
 
-@REM Run setup if needed
+@REM Detect the Unreal Engine minor version from the engine's Build.version file
+@REM and select the matching Cesium for Unreal version and download URL prefix.
+for /f "tokens=2 delims=:, " %%v in ('findstr /C:"MinorVersion" "%AEROSIM_UNREAL_ENGINE_ROOT%\Engine\Build\Build.version"') do set UE_MINOR_VERSION=%%v
+if "!UE_MINOR_VERSION!" == "3" (
+    set CESIUM_VERSION=v2.13.2
+    set CESIUM_UE_PREFIX=53
+) else if "!UE_MINOR_VERSION!" == "7" (
+    set CESIUM_VERSION=v2.23.0
+    set CESIUM_UE_PREFIX=57
+) else (
+    echo ERROR: Unsupported Unreal Engine minor version: 5.!UE_MINOR_VERSION!. Supported versions: 5.3, 5.7.
+    goto :EOF
+)
+
+@REM Run setup if needed - check for version mismatch and re-download if needed
+if exist %CESIUM_SOURCE_PATH% (
+    set CESIUM_UPLUGIN=%CESIUM_SOURCE_PATH%\CesiumForUnreal.uplugin
+    for /f "tokens=2 delims=:, " %%v in ('findstr /C:"VersionName" "!CESIUM_UPLUGIN!" 2^>nul') do set CESIUM_INSTALLED_VERSION=%%~v
+    set CESIUM_REQUIRED_VERSION=!CESIUM_VERSION:v=!
+    if not "!CESIUM_INSTALLED_VERSION!" == "!CESIUM_REQUIRED_VERSION!" (
+        echo CesiumForUnreal version mismatch: installed=!CESIUM_INSTALLED_VERSION!, required=!CESIUM_REQUIRED_VERSION!
+        echo Removing installed plugin and re-downloading...
+        rmdir /S /Q %CESIUM_SOURCE_PATH%
+    )
+)
 if not exist %CESIUM_SOURCE_PATH% (
-    echo Downloading CesiumForUnreal %CESIUM_VERSION%...
+    echo Downloading CesiumForUnreal !CESIUM_VERSION! for UE 5.!UE_MINOR_VERSION!...
     pushd Plugins
-    curl --retry 5 --retry-max-time 120 -L -o CesiumPluginForUnreal.zip https://github.com/CesiumGS/cesium-unreal/releases/download/%CESIUM_VERSION%/CesiumForUnreal-53-%CESIUM_VERSION%.zip && tar -xf CesiumPluginForUnreal.zip && del CesiumPluginForUnreal.zip
+    curl --retry 5 --retry-max-time 120 -L -o CesiumPluginForUnreal.zip https://github.com/CesiumGS/cesium-unreal/releases/download/!CESIUM_VERSION!/CesiumForUnreal-!CESIUM_UE_PREFIX!-!CESIUM_VERSION!.zip && tar -xf CesiumPluginForUnreal.zip && del CesiumPluginForUnreal.zip
     popd
 )
 
