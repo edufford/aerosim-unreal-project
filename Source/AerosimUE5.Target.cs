@@ -8,7 +8,10 @@ public class AerosimUE5Target : TargetRules
 	public AerosimUE5Target(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
-		// Select build settings based on the engine version being compiled against
+		// Select build settings based on the engine version being compiled against.
+		// Use Enum.TryParse for UE 5.7+ values to avoid compile errors on UE 5.3
+		// where BuildSettingsVersion.V6 and EngineIncludeOrderVersion.Unreal5_7
+		// are not defined in UnrealBuildTool.dll.
 		if (Target.Version.MinorVersion == 3)
 		{
 			DefaultBuildSettings = BuildSettingsVersion.V4;
@@ -16,8 +19,10 @@ public class AerosimUE5Target : TargetRules
 		}
 		else if (Target.Version.MinorVersion == 7)
 		{
-			DefaultBuildSettings = BuildSettingsVersion.V6;
-			IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_7;
+			if (Enum.TryParse("V6", out BuildSettingsVersion v6))
+				DefaultBuildSettings = v6;
+			if (Enum.TryParse("Unreal5_7", out EngineIncludeOrderVersion ue57))
+				IncludeOrderVersion = ue57;
 		}
 		else
 		{
