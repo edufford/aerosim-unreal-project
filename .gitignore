@@ -15,3 +15,6 @@ package-*
 
 # PixelStreaming get_ps_server.bat/sh scripts pulled by Unreal
 Samples
+
+# Cesium request cache files
+cesium-request-*
