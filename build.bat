@@ -83,13 +83,17 @@ for /f "tokens=2 delims=:, " %%v in ('findstr /C:"MinorVersion" "%AEROSIM_UNREAL
 if "!UE_MINOR_VERSION!" == "3" (
     set CESIUM_VERSION=v2.13.2
     set CESIUM_UE_PREFIX=53
+    set MSVC_TOOLCHAIN_VERSION=14.40.33807
 ) else if "!UE_MINOR_VERSION!" == "7" (
     set CESIUM_VERSION=v2.23.0
     set CESIUM_UE_PREFIX=57
+    set MSVC_TOOLCHAIN_VERSION=14.44.35207
 ) else (
     echo ERROR: Unsupported Unreal Engine minor version: 5.!UE_MINOR_VERSION!. Supported versions: 5.3, 5.7.
     goto :EOF
 )
+
+echo Using MSVC toolchain !MSVC_TOOLCHAIN_VERSION! for UE 5.!UE_MINOR_VERSION!
 
 @REM Run setup if needed - check for version mismatch and re-download if needed
 if exist %CESIUM_SOURCE_PATH% (
@@ -109,7 +113,10 @@ if not exist %CESIUM_SOURCE_PATH% (
     popd
 )
 
-set BUILD_CMD="%AEROSIM_UNREAL_ENGINE_ROOT%\Engine\Build\BatchFiles\Build.bat" AerosimUE5Editor Win64 Development "%UPROJECT%"
+@REM Pass -CompilerVersion directly to UBT so the correct toolchain is used for the active UE
+@REM version regardless of what BuildConfiguration.xml or DefaultEngine.ini may specify.
+@REM (UE 5.3 requires 14.40; UE 5.7 requires 14.44+ and bans 14.40-14.43)
+set BUILD_CMD="%AEROSIM_UNREAL_ENGINE_ROOT%\Engine\Build\BatchFiles\Build.bat" AerosimUE5Editor Win64 Development "%UPROJECT%" -CompilerVersion=!MSVC_TOOLCHAIN_VERSION!
 
 if /i !TARGET! == "build" (
     echo Building the Unreal project...
